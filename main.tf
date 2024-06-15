@@ -35,3 +35,11 @@ module "financify_api" {
   authorizer_name = local.authorizer_name
   user_pool_arn   = module.financify_cognito.arn
 }
+
+module "financify_domain" {
+  source      = "./modules/domain"
+  domain_name = local.domain_name
+  rest_api_id = module.financify_api.api_id
+  stage_name  = local.env
+  zone_id     = local.route53_zone_id
+}

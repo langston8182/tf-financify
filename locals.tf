@@ -6,6 +6,10 @@ locals {
   api_name        = "${local.prefix}"
   authorizer_name = "${local.prefix}"
 
+  domain_name     = "${local.project_name}.cyrilmarchive.com"
+  route53_zone_id = "Z2PY3FU1QKYN1V"
+
+
   api_resources = {
     users = {
       path   = "users"
