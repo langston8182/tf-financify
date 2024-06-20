@@ -3,5 +3,5 @@ locals {
   integration_type        = "AWS_PROXY"
   integration_http_method = "POST"
   authorizer_type         = "COGNITO_USER_POOLS"
-  authorization_scopes    = ["openid"]
+  authorization_scopes    = ["aws.cognito.signin.user.admin"]
 }

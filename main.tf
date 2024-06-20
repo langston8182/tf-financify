@@ -17,12 +17,14 @@ module "financify_lambda" {
 }
 
 module "financify_cognito" {
-  source                = "./modules/cognito"
-  user_pool_name        = local.user_pool_name
-  user_pool_client_name = local.user_pool_client_name
-  user_pool_domain_name = local.user_pool_domain_name
-  callback_urls         = local.callback_urls
-  schema_fields         = local.schema_fields
+  depends_on                               = [module.financify_lambda]
+  source                                   = "./modules/cognito"
+  user_pool_name                           = local.user_pool_name
+  user_pool_client_name                    = local.user_pool_client_name
+  user_pool_domain_name                    = local.user_pool_domain_name
+  callback_urls                            = local.callback_urls
+  schema_fields                            = local.schema_fields
+  lambda_name_function_post_authentication = local.lambda_function_name_add_user_from_cognito
 }
 
 module "financify_api" {

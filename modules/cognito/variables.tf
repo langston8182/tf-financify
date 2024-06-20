@@ -21,3 +21,7 @@ variable "schema_fields" {
     type     = string
   }))
 }
+
+variable "lambda_name_function_post_authentication" {
+  type = string
+}

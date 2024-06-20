@@ -33,6 +33,9 @@ resource "aws_cognito_user_pool" "user_pool" {
       mutable             = schema.value.mutable
     }
   }
+  lambda_config {
+    post_confirmation = data.aws_lambda_function.lambda_function.arn
+  }
 }
 
 resource "aws_cognito_user_pool_client" "user_pool_client" {
@@ -52,4 +55,11 @@ resource "aws_cognito_user_pool_client" "user_pool_client" {
 resource "aws_cognito_user_pool_domain" "user_pool_domain" {
   domain       = var.user_pool_domain_name
   user_pool_id = aws_cognito_user_pool.user_pool.id
+}
+
+resource "aws_lambda_permission" "cognito" {
+  action        = "lambda:InvokeFunction"
+  function_name = var.lambda_name_function_post_authentication
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.user_pool.arn
 }

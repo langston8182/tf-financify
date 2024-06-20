@@ -5,7 +5,7 @@ const client = new DynamoDBClient();
 
 export const handler = async (event) => {
     const { userId } = event.pathParameters;
-    const { firstName, lastName } = JSON.parse(event.body);
+    const { givenName, familyName } = JSON.parse(event.body);
     const tableName = process.env.TABLE_NAME;
 
     const params = {
@@ -13,10 +13,10 @@ export const handler = async (event) => {
         Key: {
             id: userId,
         },
-        UpdateExpression: "set firstName = :f, lastName = :l",
+        UpdateExpression: "set givenName = :g, familyName = :f",
         ExpressionAttributeValues: {
-            ":f": firstName,
-            ":l": lastName,
+            ":g": givenName,
+            ":f": familyName,
         },
         ReturnValues: "ALL_NEW",
     };

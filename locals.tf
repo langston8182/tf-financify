@@ -82,18 +82,25 @@ locals {
     local.dynamodb_table_name_expense_categories
   ]
 
-  lambda_function_name_add_user    = "${local.prefix}-add-user"
-  lambda_function_name_list_users  = "${local.prefix}-list-users"
-  lambda_function_name_get_user    = "${local.prefix}-get-user"
-  lambda_function_name_delete_user = "${local.prefix}-delete-user"
-  lambda_function_name_update_user = "${local.prefix}-update-user"
+  lambda_function_name_add_user_from_cognito = "${local.prefix}-add-user-from-cognito"
+  lambda_function_name_add_user              = "${local.prefix}-add-user"
+  lambda_function_name_list_users            = "${local.prefix}-list-users"
+  lambda_function_name_get_user              = "${local.prefix}-get-user"
+  lambda_function_name_delete_user           = "${local.prefix}-delete-user"
+  lambda_function_name_update_user           = "${local.prefix}-update-user"
 
-  role_name_add_user    = "${local.prefix}-add-user"
-  role_name_list_users  = "${local.prefix}-list-users"
-  role_name_get_user    = "${local.prefix}-get-user"
-  role_name_delete_user = "${local.prefix}-delete-user"
-  role_name_update_user = "${local.prefix}-update-user"
+  role_name_add_user_from_cognito = "${local.prefix}-add-user-from-cognito"
+  role_name_add_user              = "${local.prefix}-add-user"
+  role_name_list_users            = "${local.prefix}-list-users"
+  role_name_get_user              = "${local.prefix}-get-user"
+  role_name_delete_user           = "${local.prefix}-delete-user"
+  role_name_update_user           = "${local.prefix}-update-user"
 
+  policy_update_item_from_cognito         = "${local.prefix}-update-item-from-cognito"
+  policy_update_item_actions_from_cognito = [
+    "dynamodb:UpdateItem",
+    "dynamodb:PutItem"
+  ]
   policy_update_item         = "${local.prefix}-update-item"
   policy_update_item_actions = [
     "dynamodb:UpdateItem",
@@ -119,6 +126,17 @@ locals {
   ]
 
   lambdas = {
+    "add_user_from_cognito" : {
+      name           = local.lambda_function_name_add_user_from_cognito
+      role_name      = local.role_name_add_user_from_cognito
+      policy_name    = local.policy_update_item_from_cognito
+      policy_actions = local.policy_update_item_actions_from_cognito
+      file_name      = "${local.prefix}-add-user-from-cognito.mjs"
+      table_name     = local.dynamodb_table_name_user
+      env_variables  = {
+        TABLE_NAME = local.dynamodb_table_name_user
+      }
+    },
     "add_user" : {
       name           = local.lambda_function_name_add_user
       role_name      = local.role_name_add_user

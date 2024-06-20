@@ -3,7 +3,7 @@ locals {
   auto_verified_attributes     = ["email"]
   email_sending_account        = "COGNITO_DEFAULT"
   allowed_oauth_flows          = ["code"]
-  allowed_oauth_scopes         = ["openid", "email", "profile"]
+  allowed_oauth_scopes         = ["aws.cognito.signin.user.admin"]
   supported_identity_providers = ["COGNITO"]
   explicit_auth_flows          = [
     "ALLOW_USER_SRP_AUTH",
