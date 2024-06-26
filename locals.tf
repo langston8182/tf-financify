@@ -92,6 +92,7 @@ locals {
   lambda_function_name_get_user              = "${local.prefix}-get-user"
   lambda_function_name_delete_user           = "${local.prefix}-delete-user"
   lambda_function_name_update_user           = "${local.prefix}-update-user"
+  lambda_function_name_add_expense_category  = "${local.prefix}-add-expense-category"
 
   role_name_add_user_from_cognito = "${local.prefix}-add-user-from-cognito"
   role_name_add_user              = "${local.prefix}-add-user"
@@ -99,6 +100,7 @@ locals {
   role_name_get_user              = "${local.prefix}-get-user"
   role_name_delete_user           = "${local.prefix}-delete-user"
   role_name_update_user           = "${local.prefix}-update-user"
+  role_name_add_expense_category  = "${local.prefix}-add-expense-category"
 
   policy_update_item_from_cognito = "${local.prefix}-update-item-from-cognito"
   policy_update_item              = "${local.prefix}-update-item"
@@ -106,6 +108,7 @@ locals {
   policy_get_user                 = "${local.prefix}-get-user"
   policy_delete_user              = "${local.prefix}-delete-user"
   policy_update_user              = "${local.prefix}-update-user"
+  policy_add_expense_category     = "${local.prefix}-add-expense-category"
 
   lambda_trigger_dynamodb_modify_cognito = {
     name             = local.lambda_function_name_trigger_dynamodb_modidy_cognito
@@ -253,6 +256,25 @@ locals {
       ]
       env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
+      }
+    },
+    "add_expense_category" : {
+      name             = local.lambda_function_name_add_expense_category
+      role_name        = local.role_name_add_expense_category
+      policy_name      = local.policy_add_expense_category
+      file_name        = "${local.prefix}-add-expense-category.mjs"
+      table_name       = local.dynamodb_table_name_expense_categories
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:UpdateItem",
+            "dynamodb:PutItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_expense_categories].dynamodb_arn]
+        }
+      ]
+      env_variables = {
+        TABLE_NAME = local.dynamodb_table_name_expense_categories
       }
     }
   }
