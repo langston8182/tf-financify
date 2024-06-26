@@ -14,12 +14,11 @@ variable "source_code_hash" {
   type = string
 }
 
-variable "policy_action" {
-  type = list(string)
-}
-
-variable "policy_resource" {
-  type = string
+variable "policy_statement" {
+  type = list(object({
+    actions   = list(string)
+    resources = list(string)
+  }))
 }
 
 variable "env_variables" {

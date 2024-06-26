@@ -82,6 +82,10 @@ locals {
     local.dynamodb_table_name_expense_categories
   ]
 
+  lambda_function_name_trigger_dynamodb_modidy_cognito = "${local.prefix}-trigger-dynamodb-modify-cognito"
+  role_name_trigger_dynamodb_modidy_cognito            = "${local.prefix}-trigger-dynamodb-modify-cognito"
+  policy_name_trigger_dynamodb_modidy_cognito          = "${local.prefix}-trigger-dynamodb-modify-cognito"
+
   lambda_function_name_add_user_from_cognito = "${local.prefix}-add-user-from-cognito"
   lambda_function_name_add_user              = "${local.prefix}-add-user"
   lambda_function_name_list_users            = "${local.prefix}-list-users"
@@ -96,99 +100,158 @@ locals {
   role_name_delete_user           = "${local.prefix}-delete-user"
   role_name_update_user           = "${local.prefix}-update-user"
 
-  policy_update_item_from_cognito         = "${local.prefix}-update-item-from-cognito"
-  policy_update_item_actions_from_cognito = [
-    "dynamodb:UpdateItem",
-    "dynamodb:PutItem"
-  ]
-  policy_update_item         = "${local.prefix}-update-item"
-  policy_update_item_actions = [
-    "dynamodb:UpdateItem",
-    "dynamodb:PutItem"
-  ]
-  policy_list_items         = "${local.prefix}-list-items"
-  policy_list_items_actions = [
-    "dynamodb:Scan",
-    "dynamodb:Query"
-  ]
-  policy_get_user         = "${local.prefix}-get-user"
-  policy_get_user_actions = [
-    "dynamodb:GetItem"
-  ]
-  policy_delete_user         = "${local.prefix}-delete-user"
-  policy_delete_user_actions = [
-    "dynamodb:DeleteItem"
-  ]
-  policy_update_user         = "${local.prefix}-update-user"
-  policy_update_user_actions = [
-    "dynamodb:UpdateItem",
-    "dynamodb:PutItem"
-  ]
+  policy_update_item_from_cognito = "${local.prefix}-update-item-from-cognito"
+  policy_update_item              = "${local.prefix}-update-item"
+  policy_list_items               = "${local.prefix}-list-items"
+  policy_get_user                 = "${local.prefix}-get-user"
+  policy_delete_user              = "${local.prefix}-delete-user"
+  policy_update_user              = "${local.prefix}-update-user"
+
+  lambda_trigger_dynamodb_modify_cognito = {
+    name             = local.lambda_function_name_trigger_dynamodb_modidy_cognito
+    role_name        = local.role_name_trigger_dynamodb_modidy_cognito
+    policy_name      = local.policy_name_trigger_dynamodb_modidy_cognito
+    file_name        = "${local.prefix}-trigger-dynamodb-modify-cognito.mjs"
+    table_name       = local.dynamodb_table_name_user
+    policy_statement = [
+      {
+        actions = [
+          "dynamodb:GetShardIterator",
+          "dynamodb:DescribeStream",
+          "dynamodb:GetRecords"
+        ]
+        resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_stream_arn]
+      },
+      {
+        actions = [
+          "dynamodb:ListStreams"
+        ]
+        resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_stream_arn]
+      },
+      {
+        actions = [
+          "cognito-idp:AdminUpdateUserAttributes",
+          "cognito-idp:AdminGetUser"
+        ]
+        resources = [module.financify_cognito.arn]
+      }
+    ]
+    env_variables = {
+      REGION       = var.region,
+      USER_POOL_ID = module.financify_cognito.user_pool_id
+    }
+  }
 
   lambdas = {
     "add_user_from_cognito" : {
-      name           = local.lambda_function_name_add_user_from_cognito
-      role_name      = local.role_name_add_user_from_cognito
-      policy_name    = local.policy_update_item_from_cognito
-      policy_actions = local.policy_update_item_actions_from_cognito
-      file_name      = "${local.prefix}-add-user-from-cognito.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_add_user_from_cognito
+      role_name        = local.role_name_add_user_from_cognito
+      policy_name      = local.policy_update_item_from_cognito
+      file_name        = "${local.prefix}-add-user-from-cognito.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:UpdateItem",
+            "dynamodb:PutItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     },
     "add_user" : {
-      name           = local.lambda_function_name_add_user
-      role_name      = local.role_name_add_user
-      policy_name    = local.policy_update_item
-      policy_actions = local.policy_update_item_actions
-      file_name      = "${local.prefix}-add-user.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_add_user
+      role_name        = local.role_name_add_user
+      policy_name      = local.policy_update_item
+      file_name        = "${local.prefix}-add-user.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:UpdateItem",
+            "dynamodb:PutItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     },
     "list_users" : {
-      name           = local.lambda_function_name_list_users
-      role_name      = local.role_name_list_users
-      policy_name    = local.policy_list_items
-      policy_actions = local.policy_list_items_actions
-      file_name      = "${local.prefix}-list-users.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_list_users
+      role_name        = local.role_name_list_users
+      policy_name      = local.policy_list_items
+      file_name        = "${local.prefix}-list-users.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:Scan",
+            "dynamodb:Query"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     },
     "get_user" : {
-      name           = local.lambda_function_name_get_user
-      role_name      = local.role_name_get_user
-      policy_name    = local.policy_get_user
-      policy_actions = local.policy_get_user_actions
-      file_name      = "${local.prefix}-get-user.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_get_user
+      role_name        = local.role_name_get_user
+      policy_name      = local.policy_get_user
+      file_name        = "${local.prefix}-get-user.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:GetItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     },
     "delete_user" : {
-      name           = local.lambda_function_name_delete_user
-      role_name      = local.role_name_delete_user
-      policy_name    = local.policy_delete_user
-      policy_actions = local.policy_delete_user_actions
-      file_name      = "${local.prefix}-delete-user.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_delete_user
+      role_name        = local.role_name_delete_user
+      policy_name      = local.policy_delete_user
+      file_name        = "${local.prefix}-delete-user.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:DeleteItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     },
     "update_user" : {
-      name           = local.lambda_function_name_update_user
-      role_name      = local.role_name_update_user
-      policy_name    = local.policy_update_user
-      policy_actions = local.policy_update_user_actions
-      file_name      = "${local.prefix}-update-user.mjs"
-      table_name     = local.dynamodb_table_name_user
-      env_variables  = {
+      name             = local.lambda_function_name_update_user
+      role_name        = local.role_name_update_user
+      policy_name      = local.policy_update_user
+      file_name        = "${local.prefix}-update-user.mjs"
+      table_name       = local.dynamodb_table_name_user
+      policy_statement = [
+        {
+          actions = [
+            "dynamodb:UpdateItem",
+            "dynamodb:PutItem"
+          ]
+          resources = [module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_arn]
+        }
+      ]
+      env_variables = {
         TABLE_NAME = local.dynamodb_table_name_user
       }
     }

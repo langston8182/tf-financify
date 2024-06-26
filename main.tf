@@ -1,6 +1,7 @@
 module "financify_dynamodb" {
   for_each             = toset(local.table_names)
   source               = "./modules/dynamodb"
+  dynamo_db_is_stream  = each.value == local.dynamodb_table_name_user ? true : false
   dynamo_db_table_name = each.value
 }
 
@@ -11,9 +12,25 @@ module "financify_lambda" {
   role_name            = each.value.role_name
   policy_name          = each.value.policy_name
   source_code_hash     = data.archive_file.zip_lambdas[each.value.file_name].output_base64sha256
-  policy_action        = each.value.policy_actions
-  policy_resource      = module.financify_dynamodb[each.value.table_name].dynamodb_arn
+  policy_statement     = each.value.policy_statement
   env_variables        = each.value.env_variables
+}
+
+module "financify_lambda_dynamodb_trigger" {
+  source               = "./modules/lambda"
+  lambda_function_name = local.lambda_trigger_dynamodb_modify_cognito.name
+  role_name            = local.lambda_trigger_dynamodb_modify_cognito.role_name
+  policy_name          = local.lambda_trigger_dynamodb_modify_cognito.policy_name
+  source_code_hash     = data.archive_file.zip_lambdas[local.lambda_trigger_dynamodb_modify_cognito.file_name].output_base64sha256
+  policy_statement     = local.lambda_trigger_dynamodb_modify_cognito.policy_statement
+  env_variables        = local.lambda_trigger_dynamodb_modify_cognito.env_variables
+}
+
+resource "aws_lambda_event_source_mapping" "dynamodb_trigger" {
+  depends_on        = [module.financify_lambda_dynamodb_trigger, module.financify_dynamodb]
+  function_name     = local.lambda_function_name_trigger_dynamodb_modidy_cognito
+  event_source_arn  = module.financify_dynamodb[local.dynamodb_table_name_user].dynamodb_stream_arn
+  starting_position = "LATEST"
 }
 
 module "financify_cognito" {

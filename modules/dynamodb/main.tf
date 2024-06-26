@@ -5,5 +5,7 @@ resource "aws_dynamodb_table" "dynamodb" {
     name = "id"
     type = "S"
   }
-  hash_key = "id"
+  hash_key         = "id"
+  stream_enabled   = var.dynamo_db_is_stream ? true : null
+  stream_view_type = var.dynamo_db_is_stream ? local.dynamo_db_stream_type : null
 }

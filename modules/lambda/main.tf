@@ -23,11 +23,11 @@ resource "aws_iam_policy" "lambda_policy" {
     {
       Version   = local.policy_version
       Statement = [
-        {
-          Action   = var.policy_action
+        for idx, statement in var.policy_statement : {
+          Action   = statement.actions
           Effect   = "Allow"
-          Resource = var.policy_resource
-          Sid      = "VisualEditor0"
+          Resource = statement.resources
+          Sid      = "VisualEditor${idx}"
         }
       ]
     }
